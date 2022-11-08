@@ -156,6 +156,22 @@ proc basic_macro_placement {args} {
     exec echo "[TIMER::get_runtime]" | python3 $::env(SCRIPTS_DIR)/write_runtime.py "macro placement - basic_mp.tcl"
 }
 
+proc block_channels {args} {
+    increment_index
+    TIMER::timer_start
+    set log [index_file $::env(placement_logs)/block_channels.log]
+    puts_info "Blocking channels between macros (log: [relpath . $log])..."
+
+    set fbasename [file rootname $::env(CURRENT_DEF)]
+
+    run_openroad_script $::env(SCRIPTS_DIR)/openroad/macro_block.tcl\
+        -indexed_log [index_file $::env(placement_logs)/macro_block.log]\
+        -save "to=$::env(placement_tmpfiles),name=macros_blocked,def,odb"
+
+    TIMER::timer_stop
+    exec echo "[TIMER::get_runtime]" | python3 $::env(SCRIPTS_DIR)/write_runtime.py "macro blocking - basic_mp.tcl"
+}
+
 proc run_placement {args} {
     # |----------------------------------------------------|
     # |----------------   3. PLACEMENT   ------------------|
@@ -165,7 +181,9 @@ proc run_placement {args} {
         set old_pl_target_density $::env(PL_TARGET_DENSITY)
         set ::env(PL_TARGET_DENSITY) $::env(PL_TARGET_DENSITY_CELLS)
     }
-
+    if { [info exists ::env(PL_MACRO_CHANNEL_WIDTH)] } {
+        block_channels
+    }
     if { $::env(PL_RANDOM_GLB_PLACEMENT) } {
         # useful for very tiny designs
         random_global_placement
