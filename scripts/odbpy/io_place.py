@@ -380,8 +380,6 @@ def io_place(
 
     # create the pins
     for side in pin_placement:
-        if len(pin_placement[side]) == 0:
-            continue
         if side in ["#N", "#S"]:
             slots, pin_placement[side] = equally_spaced_sequence(
                 side, pin_placement[side], v_tracks

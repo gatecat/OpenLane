@@ -241,7 +241,7 @@ def process_string(value: str, state: State) -> str:
         reference_variable = match[1]
         try:
             found = state.vars[reference_variable]
-            value = reference.replace(match[0], found)
+            value = reference.replace(match[0], str(found))
             full_abspath = os.path.abspath(value)
 
             # Resolve globs for paths that are inside the exposed directory
