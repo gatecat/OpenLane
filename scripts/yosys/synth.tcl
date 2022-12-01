@@ -330,7 +330,9 @@ proc run_strategy {output script strategy_name {postfix_with_strategy 0}} {
 
     splitnets
     opt_clean -purge
-    insbuf -buf {*}$::env(SYNTH_MIN_BUF_PORT)
+    if {![info exists ::env(SYNTH_BUFFERING)] || $::env(SYNTH_BUFFERING)} {
+        insbuf -buf {*}$::env(SYNTH_MIN_BUF_PORT)
+    }
 
     tee -o "$::env(synth_report_prefix).$strategy_escaped.chk.rpt" check
     tee -o "$::env(synth_report_prefix).$strategy_escaped.stat.rpt" stat -top $::env(DESIGN_NAME) -liberty [lindex $::env(LIB_SYNTH_NO_PG) 0]
