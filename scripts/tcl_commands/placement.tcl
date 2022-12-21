@@ -156,6 +156,37 @@ proc basic_macro_placement {args} {
     exec echo "[TIMER::get_runtime]" | python3 $::env(SCRIPTS_DIR)/write_runtime.py "macro placement - basic_mp.tcl"
 }
 
+
+proc pl_run_extra_opt {args} {
+    set options {}
+    set flags {-f}
+    parse_key_args "pl_run_extra_opt" args arg_values $options flags_map $flags
+
+
+    increment_index
+    TIMER::timer_start
+    set log [index_file $::env(placement_logs)/macro_placement.log]
+    puts_info "Performing Custom Placement Optimisations (log: [relpath . $log])..."
+
+    set fbasename [file rootname $::env(CURRENT_ODB)]
+
+    set prev_db $::env(CURRENT_ODB)
+    set save_def ${fbasename}.custom_opt.def
+    set save_db ${fbasename}.custom_opt.odb
+
+    set arg_list [list]
+
+    manipulate_layout $::env(PL_EXTRA_OPT) \
+        -indexed_log $log \
+        -output_def $save_def \
+        -output $save_db \
+        -input $prev_db \
+        {*}$arg_list
+
+    set_odb $save_db
+    set_def $save_def
+}
+
 proc run_placement {args} {
     # |----------------------------------------------------|
     # |----------------   3. PLACEMENT   ------------------|
@@ -183,6 +214,11 @@ proc run_placement {args} {
     }
 
     detailed_placement_or
+
+    if { [info exists ::env(PL_EXTRA_OPT)] } {
+        pl_run_extra_opt
+    }
+
 
     scrot_klayout -layout $::env(CURRENT_DEF) -log $::env(placement_logs)/screenshot.log
 }
